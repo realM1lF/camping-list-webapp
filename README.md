@@ -2,11 +2,7 @@
 
 Geteilte Packliste für Freunde, die zusammen campen gehen: Wer braucht was, wer bringt’s mit — live synchronisiert, nichts doppelt, nichts vergessen.
 
-Mobile-first PWA mit Echtzeit-Sync.
-
-![Packliste im Dark Mode – Items, Zusagen und Kommentare](docs/images/packlist.png)
-
-![Trip-Übersicht mit Fortschritt, Filtern und Kategorien](docs/images/packlist-overview.png)
+![Light- und Dark-Mode der gemeinsamen Packliste](docs/images/hero.png)
 
 ## Features
 
