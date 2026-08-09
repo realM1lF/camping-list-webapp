@@ -1,8 +1,12 @@
-# Camping
+# Camping – Gemeinsam an alles denken
 
-Geteilte, live synchronisierte Packliste für eure Camping-Trips.
+Geteilte Packliste für Freunde, die zusammen campen gehen: Wer braucht was, wer bringt’s mit — live synchronisiert, nichts doppelt, nichts vergessen.
 
-Wer braucht was? Wer bringt es mit? Status und Kommentare aktualisieren sich in Echtzeit — gebaut als mobile-first PWA.
+Mobile-first PWA mit Echtzeit-Sync.
+
+![Packliste im Dark Mode – Items, Zusagen und Kommentare](docs/images/packlist.png)
+
+![Trip-Übersicht mit Fortschritt, Filtern und Kategorien](docs/images/packlist-overview.png)
 
 ## Features
 
