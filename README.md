@@ -1,6 +1,6 @@
-# Camping – Gemeinsam an alles denken
+# Camping-Planner – Gemeinsam an alles denken
 
-Geteilte Packliste für Freunde, die zusammen campen gehen: Wer braucht was, wer bringt’s mit — live synchronisiert, nichts doppelt, nichts vergessen.
+Geteilte Packliste für Freunde, die zusammen campen gehen: Wer braucht was, wer bringt’s mit. Live synchronisiert, nichts doppelt, nichts vergessen.
 
 ![Light- und Dark-Mode der gemeinsamen Packliste](docs/images/hero.png)
 

@@ -60,7 +60,9 @@
 		<p class="micro-label micro-label-caps mb-3 text-ink-soft dark:text-cream-soft">
 			Geteilte Packliste
 		</p>
-		<h1 class="font-brand text-[2.85rem] tracking-tight text-ink dark:text-cream">Camping</h1>
+		<h1 class="font-brand text-[2.35rem] tracking-tight text-ink dark:text-cream sm:text-[2.85rem]">
+			Camping-Planner
+		</h1>
 		<p class="mx-auto mt-4 max-w-[18rem] text-pretty text-[0.95rem] leading-relaxed text-ink-soft dark:text-cream-soft">
 			Wer braucht was — und wer bringt’s mit.
 		</p>

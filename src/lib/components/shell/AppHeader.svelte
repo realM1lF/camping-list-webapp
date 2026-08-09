@@ -85,7 +85,7 @@
 				tabindex={showCompactHomeTitle ? -1 : 0}
 			>
 				<BrandMark size="md" />
-				<span class="font-brand text-[1.2rem] tracking-tight">Camping</span>
+				<span class="font-brand text-[1.05rem] tracking-tight sm:text-[1.2rem]">Camping-Planner</span>
 			</a>
 		{/if}
 

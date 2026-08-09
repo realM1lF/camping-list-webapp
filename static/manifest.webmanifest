@@ -1,6 +1,6 @@
 {
-	"name": "Camping – Packliste",
-	"short_name": "Camping",
+	"name": "Camping-Planner",
+	"short_name": "Camping-Planner",
 	"description": "Gemeinsame Packliste für eure Camping-Trips.",
 	"start_url": "/",
 	"display": "standalone",

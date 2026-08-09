@@ -7,6 +7,7 @@
 	import LoginScreen from '$lib/components/shell/LoginScreen.svelte';
 	import ProfileSetup from '$lib/components/shell/ProfileSetup.svelte';
 	import AppHeader from '$lib/components/shell/AppHeader.svelte';
+	import InstallHintSheet from '$lib/components/shell/InstallHintSheet.svelte';
 
 	let { children } = $props();
 
@@ -39,6 +40,9 @@
 	<div class="mx-auto max-w-2xl px-4 pb-[env(safe-area-inset-bottom)] sm:px-5">
 		{@render children()}
 	</div>
+	{#if $myProfile}
+		<InstallHintSheet name={$myProfile.name} />
+	{/if}
 {/if}
 
 <style>
