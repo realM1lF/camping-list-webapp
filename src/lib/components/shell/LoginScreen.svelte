@@ -58,11 +58,11 @@
 	<div class="w-full max-w-sm text-center">
 		<BrandMark size="hero" class="mx-auto mb-8 shadow-[var(--shadow-soft)]" />
 		<p class="micro-label micro-label-caps mb-3 text-ink-soft dark:text-cream-soft">
-			Camping-Packliste
+			Geteilte Packliste
 		</p>
-		<h1 class="font-brand text-[2.85rem] tracking-tight text-ink dark:text-cream">Roßmühle</h1>
+		<h1 class="font-brand text-[2.85rem] tracking-tight text-ink dark:text-cream">Camping</h1>
 		<p class="mx-auto mt-4 max-w-[18rem] text-pretty text-[0.95rem] leading-relaxed text-ink-soft dark:text-cream-soft">
-			Die geteilte Liste für unseren Trip an der Saale.
+			Wer braucht was — und wer bringt’s mit.
 		</p>
 
 		{#if step === 'email'}

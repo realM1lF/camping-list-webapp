@@ -2,7 +2,7 @@
 import { build, files, version } from '$service-worker';
 
 /** Cache-Key mit App-Version — alter Gift-Cache (cache-first auf alles) wird verworfen. */
-const CACHE = `rossmuehle-v2-${version}`;
+const CACHE = `camping-v1-${version}`;
 const ASSETS = new Set([...build, ...files]);
 
 self.addEventListener('install', (event: ExtendableEvent) => {

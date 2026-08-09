@@ -68,7 +68,7 @@
 			<div>
 				<p class="font-display text-xl font-semibold">Noch kein Trip</p>
 				<p class="mx-auto mt-1.5 max-w-[16rem] text-sm leading-relaxed text-ink-soft dark:text-cream-soft">
-					Zeit, den nächsten an der Saale zu planen.
+					Zeit, den nächsten Trip zu planen.
 				</p>
 			</div>
 			<button type="button" class="btn-primary gap-2 px-5" onclick={() => (sheetOffen = true)}>

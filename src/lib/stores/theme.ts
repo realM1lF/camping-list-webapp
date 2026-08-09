@@ -3,11 +3,12 @@ import { browser } from '$app/environment';
 
 export type Theme = 'light' | 'dark';
 
-const STORAGE_KEY = 'rossmuehle-theme';
+const STORAGE_KEY = 'camping-theme';
+const LEGACY_STORAGE_KEY = 'rossmuehle-theme';
 
 function initialTheme(): Theme {
 	if (!browser) return 'light';
-	const saved = localStorage.getItem(STORAGE_KEY);
+	const saved = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
 	// Light ist Standard – Dark nur bei expliziter Wahl.
 	return saved === 'dark' ? 'dark' : 'light';
 }

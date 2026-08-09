@@ -1,7 +1,7 @@
 {
-	"name": "Roßmühle – Camping-Packliste",
-	"short_name": "Roßmühle",
-	"description": "Gemeinsame Packliste für den jährlichen Camping-Trip an der Saale.",
+	"name": "Camping – Packliste",
+	"short_name": "Camping",
+	"description": "Gemeinsame Packliste für eure Camping-Trips.",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#e9efe9",

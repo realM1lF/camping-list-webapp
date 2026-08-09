@@ -17,7 +17,7 @@
 			(function () {
 				var t = null;
 				try {
-					t = localStorage.getItem('rossmuehle-theme');
+					t = localStorage.getItem('camping-theme') || localStorage.getItem('rossmuehle-theme');
 				} catch (e) {}
 				if (t === 'dark') {
 					document.documentElement.classList.add('dark');

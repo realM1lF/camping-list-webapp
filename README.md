@@ -1,6 +1,6 @@
-# Roßmühle
+# Camping
 
-Geteilte, live synchronisierte Packliste für den jährlichen Camping-Trip an der Saale.
+Geteilte, live synchronisierte Packliste für eure Camping-Trips.
 
 Wer braucht was? Wer bringt es mit? Status und Kommentare aktualisieren sich in Echtzeit — gebaut als mobile-first PWA.
 
@@ -104,4 +104,4 @@ Vorlage: [`.env.example`](.env.example) — `.env` nicht committen.
 
 ## Lizenz
 
-Privat — nicht zur öffentlichen Nutzung freigegeben, sofern nicht anders vereinbart.
+[MIT](LICENSE) © 2026 Sebastian Schwerdhoefer
