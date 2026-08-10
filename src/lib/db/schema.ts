@@ -12,7 +12,13 @@ const _schema = i.schema({
 		profiles: i.entity({
 			name: i.string(),
 			emoji: i.string().optional(),
-			createdAt: i.number()
+			createdAt: i.number(),
+			/** Default true, wenn fehlend */
+			notifyReplies: i.boolean().optional(),
+			notifyMentions: i.boolean().optional(),
+			notifyItemActivity: i.boolean().optional(),
+			/** JSON PushSubscription */
+			pushSubscription: i.string().optional()
 		}),
 		trips: i.entity({
 			name: i.string(),
@@ -36,6 +42,15 @@ const _schema = i.schema({
 		comments: i.entity({
 			text: i.string(),
 			createdAt: i.number().indexed()
+		}),
+		notifications: i.entity({
+			kind: i.string().indexed(),
+			title: i.string(),
+			body: i.string(),
+			read: i.boolean(),
+			createdAt: i.number().indexed(),
+			tripId: i.string().optional(),
+			itemId: i.string().optional()
 		})
 	},
 	links: {
@@ -74,6 +89,18 @@ const _schema = i.schema({
 		commentAuthor: {
 			forward: { on: 'comments', has: 'one', label: 'author' },
 			reverse: { on: 'profiles', has: 'many', label: 'comments' }
+		},
+		commentReplyTo: {
+			forward: { on: 'comments', has: 'one', label: 'replyTo' },
+			reverse: { on: 'comments', has: 'many', label: 'replies' }
+		},
+		commentMentions: {
+			forward: { on: 'comments', has: 'many', label: 'mentions' },
+			reverse: { on: 'profiles', has: 'many', label: 'mentionedIn' }
+		},
+		notificationRecipient: {
+			forward: { on: 'notifications', has: 'one', label: 'recipient' },
+			reverse: { on: 'profiles', has: 'many', label: 'notifications' }
 		}
 	}
 });

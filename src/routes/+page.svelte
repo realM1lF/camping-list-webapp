@@ -4,13 +4,20 @@
 	import BrandMark from '$lib/components/BrandMark.svelte';
 	import { myProfile, query } from '$lib/db/store';
 	import { homeGreeting, homeTitleCompact } from '$lib/stores/navChrome';
+	import { berlinGreeting, formatBerlinDate } from '$lib/time';
 	import type { Trip } from '$lib/types';
 	import TripCard from '$lib/components/shell/TripCard.svelte';
 	import NewTripSheet from '$lib/components/shell/NewTripSheet.svelte';
 
 	let sheetOffen = $state(false);
+	let now = $state(new Date());
 
-	const tripsQuery = query<{ trips: Trip[] }>({ trips: { createdBy: {} } });
+	const tripsQuery = query<{ trips: Trip[] }>({
+		trips: {
+			createdBy: {},
+			items: { claims: {} }
+		}
+	});
 
 	let trips = $derived(
 		[...($tripsQuery.data?.trips ?? [])].sort(
@@ -18,21 +25,33 @@
 		)
 	);
 
-	let datumHeute = $derived(
-		new Date().toLocaleDateString('de-DE', {
-			weekday: 'long',
-			day: 'numeric',
-			month: 'long'
-		})
-	);
-
+	let datumHeute = $derived(formatBerlinDate(now));
+	let begruessung = $derived(berlinGreeting(now));
 	let vorname = $derived($myProfile?.name.trim().split(/\s+/)[0] ?? '');
 
 	$effect(() => {
-		homeGreeting.set(vorname ? `Moin, ${vorname}` : 'Moin');
+		homeGreeting.set(vorname ? `${begruessung}, ${vorname}` : begruessung);
 		return () => {
 			homeGreeting.set('');
 			homeTitleCompact.set(false);
+		};
+	});
+
+	$effect(() => {
+		if (!browser) return;
+		let intervalId = 0;
+		const tick = () => {
+			now = new Date();
+		};
+		// Zur vollen Minute neu bewerten (Moin → Hallo → Abend)
+		const ms = 60_000 - (Date.now() % 60_000);
+		const timeoutId = window.setTimeout(() => {
+			tick();
+			intervalId = window.setInterval(tick, 60_000);
+		}, ms);
+		return () => {
+			clearTimeout(timeoutId);
+			if (intervalId) clearInterval(intervalId);
 		};
 	});
 
@@ -53,7 +72,7 @@
 			{datumHeute}
 		</p>
 		<h1 class="large-title-heading font-display font-semibold tracking-tight">
-			Moin{#if vorname}, <span class="font-semibold">{vorname}</span>{/if}
+			{begruessung}{#if vorname}, <span class="font-semibold">{vorname}</span>{/if}
 		</h1>
 		<p class="large-title-sub mt-2 text-[0.9375rem] text-ink-soft dark:text-cream-soft">
 			Bereit für den nächsten Trip?

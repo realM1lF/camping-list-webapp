@@ -10,7 +10,7 @@
 	import { myProfile, query } from '$lib/db/store';
 	import { haptic } from '$lib/motion/haptic';
 	import { getItemStatus } from '$lib/status';
-	import type { Item, ItemFilter, ListView as ListViewMode, Trip } from '$lib/types';
+	import type { Item, ItemFilter, ListView as ListViewMode, Profile, Trip } from '$lib/types';
 
 	interface TripWithItems extends Trip {
 		items?: Item[];
@@ -18,20 +18,27 @@
 
 	const tripId = page.params.id ?? '';
 
-	const tripQuery = query<{ trips: TripWithItems[] }>({
+	const tripQuery = query<{ trips: TripWithItems[]; profiles: Profile[] }>({
 		trips: {
 			$: { where: { id: tripId } },
 			items: {
 				claims: { user: { avatar: {} } },
-				comments: { author: { avatar: {} } },
+				comments: {
+					author: { avatar: {} },
+					replyTo: { author: {} },
+					mentions: {}
+				},
 				createdBy: { avatar: {} }
 			}
-		}
+		},
+		profiles: { avatar: {} }
 	} as never);
 
 	let trip = $derived($tripQuery.data?.trips?.[0]);
 	let items = $derived(trip?.items ?? []);
+	let people = $derived($tripQuery.data?.profiles ?? []);
 	let myProfileId = $derived($myProfile?.id ?? '');
+	let authorName = $derived($myProfile?.name ?? 'Jemand');
 
 	let view = $state<ListViewMode>('category');
 	let filter = $state<ItemFilter>('all');
@@ -40,6 +47,15 @@
 	let newItemOpen = $state(false);
 
 	let selectedItem = $derived(items.find((i) => i.id === selectedItemId) ?? null);
+
+	$effect(() => {
+		const itemParam = page.url.searchParams.get('item');
+		if (!itemParam || !items.length) return;
+		if (items.some((i) => i.id === itemParam)) {
+			selectedItemId = itemParam;
+			detailOpen = true;
+		}
+	});
 
 	$effect(() => {
 		if (!browser) return;
@@ -201,7 +217,10 @@
 {#if selectedItem}
 	<ItemDetailSheet
 		item={selectedItem}
+		{tripId}
 		{myProfileId}
+		{people}
+		{authorName}
 		open={detailOpen}
 		onclose={() => (detailOpen = false)}
 	/>

@@ -4,7 +4,7 @@
 	import AvatarBadge from '../AvatarBadge.svelte';
 	import EmojiPicker from '../EmojiPicker.svelte';
 	import CommentThread from './CommentThread.svelte';
-	import type { Item, ItemStatus } from '$lib/types';
+	import type { Item, ItemStatus, Profile } from '$lib/types';
 	import { claimedCount, getItemStatus } from '$lib/status';
 	import { CATEGORIES, categoryLabel } from '$lib/data/keywords';
 	import { claimItem, deleteItem, unclaimItem, updateClaimCount, updateItem } from '$lib/db/repo';
@@ -12,12 +12,15 @@
 
 	interface Props {
 		item: Item;
+		tripId: string;
 		myProfileId: string;
+		people: Profile[];
+		authorName: string;
 		open: boolean;
 		onclose: () => void;
 	}
 
-	let { item, myProfileId, open, onclose }: Props = $props();
+	let { item, tripId, myProfileId, people, authorName, open, onclose }: Props = $props();
 
 	const BADGE: Record<ItemStatus, string> = {
 		open: 'bg-ember-soft text-ember-deep dark:text-ember',
@@ -293,7 +296,14 @@
 			</section>
 		{/if}
 
-		<CommentThread itemId={item.id} comments={item.comments ?? []} {myProfileId} />
+		<CommentThread
+			{item}
+			{tripId}
+			comments={item.comments ?? []}
+			{myProfileId}
+			{people}
+			{authorName}
+		/>
 
 		{#if isCreator}
 			<!-- iOS-style destructive action: last, plain, centered -->

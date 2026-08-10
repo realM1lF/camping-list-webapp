@@ -7,6 +7,7 @@
 	import AvatarBadge from '$lib/components/AvatarBadge.svelte';
 	import BrandMark from '$lib/components/BrandMark.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';
+	import NotificationBell from './NotificationBell.svelte';
 	import ProfileSettings from './ProfileSettings.svelte';
 
 	let menuMounted = $state(false);
@@ -98,6 +99,9 @@
 		{/if}
 
 		<div class="relative z-10 flex items-center gap-0.5">
+			{#if $myProfile}
+				<NotificationBell />
+			{/if}
 			<ThemeToggle />
 			{#if $myProfile}
 				<div class="relative" data-avatar-menu>

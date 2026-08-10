@@ -49,5 +49,13 @@ export default {
 			update: 'false',
 			delete: 'auth.id == data.ref("author.$user.id")[0]'
 		}
+	},
+	notifications: {
+		allow: {
+			view: 'auth.id == data.ref("recipient.$user.id")[0]',
+			create: 'auth.id != null',
+			update: 'auth.id == data.ref("recipient.$user.id")[0]',
+			delete: 'auth.id == data.ref("recipient.$user.id")[0]'
+		}
 	}
 };
