@@ -33,23 +33,27 @@
 		items: Item[];
 		filter: ItemFilter;
 		myProfileId?: string;
+		compact?: boolean;
 		onselect: (item: Item) => void;
 	}
 
-	let { items, filter, myProfileId, onselect }: Props = $props();
+	let { items, filter, myProfileId, compact = true, onselect }: Props = $props();
 
 	let visible = $derived(sortItems(filterItems(items, filter, myProfileId)));
 </script>
 
 {#if visible.length === 0}
-	<p class="card-soft py-12 text-center text-sm text-ink-soft dark:text-cream-soft">
-		Nichts Passendes dabei – Filter ändern oder etwas Neues anlegen.
-	</p>
+	<div class="group-list px-5 py-14 text-center">
+		<p class="font-display text-lg font-semibold">Nichts Passendes</p>
+		<p class="mt-1.5 text-sm text-ink-soft dark:text-cream-soft">
+			Filter ändern oder etwas Neues anlegen.
+		</p>
+	</div>
 {:else}
-	<ul class="space-y-2.5">
+	<ul class="group-list">
 		{#each visible as item (item.id)}
 			<li>
-				<ItemRow {item} {onselect} />
+				<ItemRow {item} {compact} {onselect} />
 			</li>
 		{/each}
 	</ul>

@@ -28,6 +28,7 @@
 	let replyTo = $state<Comment | null>(null);
 	let mentionOpen = $state(false);
 	let mentionQuery = $state('');
+	let pendingDelete = $state<string | null>(null);
 
 	let sorted = $derived([...comments].sort((a, b) => a.createdAt - b.createdAt));
 	let count = $derived(sorted.length);
@@ -194,14 +195,34 @@
 									<CornerUpLeft class="h-3.5 w-3.5" strokeWidth={1.75} />
 								</button>
 								{#if mine}
-									<button
-										type="button"
-										class="pressable -m-1 grid h-9 w-9 shrink-0 place-items-center text-ink-soft hover:text-ember-deep focus-visible:opacity-100 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100 dark:text-cream-soft"
-										onclick={() => deleteComment(c.id)}
-										aria-label="Nachricht löschen"
-									>
-										<Trash2 class="h-3.5 w-3.5" strokeWidth={1.75} />
-									</button>
+									{#if pendingDelete === c.id}
+										<button
+											type="button"
+											class="pressable min-h-9 px-1.5 text-[0.7rem] font-semibold text-red-600 dark:text-red-400"
+											onclick={() => {
+												deleteComment(c.id);
+												pendingDelete = null;
+											}}
+										>
+											Löschen
+										</button>
+										<button
+											type="button"
+											class="pressable min-h-9 px-1.5 text-[0.7rem] font-medium text-ink-soft dark:text-cream-soft"
+											onclick={() => (pendingDelete = null)}
+										>
+											Abbrechen
+										</button>
+									{:else}
+										<button
+											type="button"
+											class="pressable -m-1 grid h-9 w-9 shrink-0 place-items-center text-ink-soft hover:text-ember-deep focus-visible:opacity-100 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100 dark:text-cream-soft"
+											onclick={() => (pendingDelete = c.id)}
+											aria-label="Nachricht löschen"
+										>
+											<Trash2 class="h-3.5 w-3.5" strokeWidth={1.75} />
+										</button>
+									{/if}
 								{/if}
 							</div>
 						</div>

@@ -93,8 +93,40 @@ export function createTrip(profileId: string, input: TripInput) {
 	);
 }
 
+export function updateTrip(tripId: string, input: TripInput) {
+	return db.transact(
+		db.tx.trips[tripId].update({
+			name: input.name.trim(),
+			year: input.year,
+			location: input.location?.trim() || undefined,
+			startDate: input.startDate || undefined,
+			endDate: input.endDate || undefined
+		})
+	);
+}
+
 export function deleteTrip(tripId: string) {
 	return db.transact(db.tx.trips[tripId].delete());
+}
+
+/** Trip inkl. Items, Zusagen und Kommentaren — Instant hat keine Cascades. */
+export function deleteTripDeep(trip: {
+	id: string;
+	items?: Array<{
+		id: string;
+		claims?: Array<{ id: string }>;
+		comments?: Array<{ id: string }>;
+	}>;
+}) {
+	const items = trip.items ?? [];
+	const claimIds = items.flatMap((i) => (i.claims ?? []).map((c) => c.id));
+	const commentIds = items.flatMap((i) => (i.comments ?? []).map((c) => c.id));
+	return db.transact([
+		...commentIds.map((cid) => db.tx.comments[cid].delete()),
+		...claimIds.map((cid) => db.tx.claims[cid].delete()),
+		...items.map((i) => db.tx.items[i.id].delete()),
+		db.tx.trips[trip.id].delete()
+	]);
 }
 
 // ---- Items ----
@@ -289,4 +321,9 @@ export function markNotificationRead(notificationId: string) {
 export function markAllNotificationsRead(ids: string[]) {
 	if (ids.length === 0) return Promise.resolve();
 	return db.transact(ids.map((nid) => db.tx.notifications[nid].update({ read: true })));
+}
+
+export function deleteNotifications(ids: string[]) {
+	if (ids.length === 0) return Promise.resolve();
+	return db.transact(ids.map((nid) => db.tx.notifications[nid].delete()));
 }

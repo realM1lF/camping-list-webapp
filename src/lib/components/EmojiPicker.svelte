@@ -10,6 +10,15 @@
 
 	let freeInput = $state('');
 
+	function sameEmoji(a: string, b: string) {
+		return a.replace(/\uFE0F|\uFE0E/g, '') === b.replace(/\uFE0F|\uFE0E/g, '');
+	}
+
+	function pick(choice: string, e: Event) {
+		e.stopPropagation();
+		onchange(choice);
+	}
+
 	function onFreeInput(e: Event) {
 		const raw = (e.currentTarget as HTMLInputElement).value;
 		// Erstes Emoji/Graphem übernehmen – deckt auch mehrteilige Emoji (ZWJ) ab.
@@ -22,7 +31,11 @@
 	}
 </script>
 
-<div>
+<div
+	role="group"
+	onpointerdown={(e) => e.stopPropagation()}
+	onpointerup={(e) => e.stopPropagation()}
+>
 	<div
 		class="grid max-h-44 grid-cols-7 gap-1 overflow-y-auto p-1 sm:grid-cols-9"
 		aria-label="Emoji auswählen"
@@ -30,11 +43,10 @@
 		{#each EMOJI_CHOICES as choice (choice)}
 			<button
 				type="button"
-				onclick={() => onchange(choice)}
+				onclick={(e) => pick(choice, e)}
 				aria-label={`Emoji ${choice}`}
-				aria-pressed={value === choice}
-				class="pressable flex h-10 w-10 items-center justify-center rounded-xl text-xl {value ===
-				choice
+				aria-pressed={sameEmoji(value, choice)}
+				class="flex h-10 w-10 items-center justify-center rounded-xl text-xl {sameEmoji(value, choice)
 					? 'bg-ink/90 text-raised shadow-sm dark:bg-cream dark:text-night'
 					: 'hover:bg-sunken/80 dark:hover:bg-night-sunken'}"
 			>

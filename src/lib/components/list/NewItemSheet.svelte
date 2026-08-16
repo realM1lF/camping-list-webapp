@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Minus, Plus } from 'lucide-svelte';
 	import Sheet from '$lib/components/Sheet.svelte';
+	import EmojiPicker from '$lib/components/EmojiPicker.svelte';
 	import { CATEGORIES, type CategoryId } from '$lib/data/keywords';
 	import { addItem } from '$lib/db/repo';
 
@@ -15,13 +16,12 @@
 
 	let name = $state('');
 	let category = $state<CategoryId | null>(null);
+	let emoji = $state('🎒');
+	let emojiCustom = $state(false);
+	let emojiOpen = $state(false);
 	let neededCount = $state(1);
 	let saving = $state(false);
 	let errorMsg = $state<string | null>(null);
-
-	let emoji = $derived(
-		category ? (CATEGORIES.find((c) => c.id === category)?.emoji ?? '🎒') : '🎒'
-	);
 	let canSave = $derived(
 		name.trim().length > 0 && category !== null && myProfileId.length > 0 && !saving
 	);
@@ -30,6 +30,9 @@
 		if (open) {
 			name = '';
 			category = null;
+			emoji = '🎒';
+			emojiCustom = false;
+			emojiOpen = false;
 			neededCount = 1;
 			saving = false;
 			errorMsg = null;
@@ -70,15 +73,37 @@
 			>
 				Was wird gebraucht?
 			</label>
-			<input
-				id="new-item-name"
-				type="text"
-				bind:value={name}
-				use:focusOnMount
-				placeholder="z. B. Campingkocher"
-				autocomplete="off"
-				class="input-soft"
-			/>
+			<div class="flex items-start gap-3">
+				<button
+					type="button"
+					class="emoji-tile pressable h-14 w-14 shrink-0 text-[1.75rem] hover:ring-2 hover:ring-ember/35"
+					onclick={() => (emojiOpen = !emojiOpen)}
+					aria-label="Emoji ändern"
+					aria-expanded={emojiOpen}
+				>
+					{emoji}
+				</button>
+				<input
+					id="new-item-name"
+					type="text"
+					bind:value={name}
+					use:focusOnMount
+					placeholder="z. B. Campingkocher"
+					autocomplete="off"
+					class="input-soft min-w-0 flex-1"
+				/>
+			</div>
+			{#if emojiOpen}
+				<div class="group-list mt-3 p-2">
+					<EmojiPicker
+						value={emoji}
+						onchange={(e) => {
+							emoji = e;
+							emojiCustom = true;
+						}}
+					/>
+				</div>
+			{/if}
 		</div>
 
 		<div>
@@ -89,7 +114,10 @@
 				{#each CATEGORIES as c (c.id)}
 					<button
 						type="button"
-						onclick={() => (category = c.id)}
+						onclick={() => {
+							category = c.id;
+							if (!emojiCustom) emoji = c.emoji;
+						}}
 						aria-pressed={category === c.id}
 						class="pressable flex min-h-12 items-center justify-center gap-2 rounded-2xl px-3 text-sm font-semibold {category ===
 						c.id

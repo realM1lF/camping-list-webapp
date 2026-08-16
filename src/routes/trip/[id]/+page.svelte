@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
 	import { Rows3, AlignJustify, Plus } from 'lucide-svelte';
 	import BrandMark from '$lib/components/BrandMark.svelte';
 	import ItemDetailSheet from '$lib/components/detail/ItemDetailSheet.svelte';
 	import CategoryView from '$lib/components/list/CategoryView.svelte';
 	import FilterBar from '$lib/components/list/FilterBar.svelte';
+	import ListView from '$lib/components/list/ListView.svelte';
 	import NewItemSheet from '$lib/components/list/NewItemSheet.svelte';
 	import { myProfile, query } from '$lib/db/store';
 	import { haptic } from '$lib/motion/haptic';
@@ -47,15 +49,27 @@
 	let newItemOpen = $state(false);
 
 	let selectedItem = $derived(items.find((i) => i.id === selectedItemId) ?? null);
+	let openedFromParam = $state<string | null>(null);
 
 	$effect(() => {
 		const itemParam = page.url.searchParams.get('item');
-		if (!itemParam || !items.length) return;
-		if (items.some((i) => i.id === itemParam)) {
-			selectedItemId = itemParam;
-			detailOpen = true;
+		if (!itemParam) {
+			openedFromParam = null;
+			return;
 		}
+		if (openedFromParam === itemParam) return;
+		if (!items.some((i) => i.id === itemParam)) return;
+		selectedItemId = itemParam;
+		detailOpen = true;
+		openedFromParam = itemParam;
 	});
+
+	function closeDetail() {
+		detailOpen = false;
+		if (!page.url.searchParams.has('item')) return;
+		openedFromParam = null;
+		void goto(`/trip/${tripId}`, { replaceState: true, noScroll: true, keepFocus: true });
+	}
 
 	$effect(() => {
 		if (!browser) return;
@@ -122,8 +136,8 @@
 					type="button"
 					onclick={() => setView('compact')}
 					aria-pressed={view === 'compact'}
-					title="Kompakt"
-					aria-label="Kompakte Ansicht"
+					title="Liste"
+					aria-label="Listenansicht"
 					class="pressable segmented-item !min-h-11 !min-w-11 !px-0"
 				>
 					<Rows3 size={17} strokeWidth={1.75} />
@@ -183,13 +197,17 @@
 				</button>
 			</div>
 		{:else}
-			<CategoryView
-				{items}
-				{filter}
-				{myProfileId}
-				density={view === 'compact' ? 'compact' : 'comfortable'}
-				onselect={openDetail}
-			/>
+			{#if view === 'compact'}
+				<ListView {items} {filter} {myProfileId} compact onselect={openDetail} />
+			{:else}
+				<CategoryView
+					{items}
+					{filter}
+					{myProfileId}
+					density="comfortable"
+					onselect={openDetail}
+				/>
+			{/if}
 		{/if}
 	{:else if !$tripQuery.isLoading}
 		<p class="py-16 text-center text-sm text-ink-soft dark:text-cream-soft">
@@ -222,6 +240,6 @@
 		{people}
 		{authorName}
 		open={detailOpen}
-		onclose={() => (detailOpen = false)}
+		onclose={closeDetail}
 	/>
 {/if}

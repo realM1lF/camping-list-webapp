@@ -3,13 +3,16 @@
 	import Sheet from '$lib/components/Sheet.svelte';
 	import { myProfile } from '$lib/db/store';
 	import { requireDb, id } from '$lib/db/client';
+	import { updateTrip } from '$lib/db/repo';
+	import type { Trip } from '$lib/types';
 
 	interface Props {
 		open: boolean;
 		onclose: () => void;
+		trip?: Trip | null;
 	}
 
-	let { open, onclose }: Props = $props();
+	let { open, onclose, trip = null }: Props = $props();
 
 	const jahr = new Date().getFullYear();
 
@@ -21,15 +24,25 @@
 	let busy = $state(false);
 	let error = $state<string | null>(null);
 
+	let editing = $derived(Boolean(trip));
+
 	// Felder zurücksetzen, wenn das Sheet frisch geöffnet wird.
 	let warOffen = false;
 	$effect(() => {
 		if (open && !warOffen) {
-			name = `Roßmühle ${jahr}`;
-			year = jahr;
-			location = 'Roßmühle, Grefenfeld an der Saale';
-			startDate = '';
-			endDate = '';
+			if (trip) {
+				name = trip.name;
+				year = trip.year;
+				location = trip.location ?? '';
+				startDate = trip.startDate ?? '';
+				endDate = trip.endDate ?? '';
+			} else {
+				name = `Roßmühle ${jahr}`;
+				year = jahr;
+				location = 'Roßmühle, Grefenfeld an der Saale';
+				startDate = '';
+				endDate = '';
+			}
 			error = null;
 		}
 		warOffen = open;
@@ -42,24 +55,27 @@
 		busy = true;
 		error = null;
 		try {
-			// createTrip aus dem Repo generiert die ID intern; hier vorab selbst
-			// generieren, damit wir direkt zur neuen Trip-Seite navigieren können.
-			const tid = id();
-			const db = requireDb();
-			await db.transact(
-				db.tx.trips[tid]
-					.update({
-						name: name.trim(),
-						year,
-						location: location.trim() || undefined,
-						startDate: startDate || undefined,
-						endDate: endDate || undefined,
-						createdAt: Date.now()
-					})
-					.link({ createdBy: profileId })
-			);
-			onclose();
-			await goto(`/trip/${tid}`);
+			const payload = {
+				name: name.trim(),
+				year,
+				location: location.trim() || undefined,
+				startDate: startDate || undefined,
+				endDate: endDate || undefined
+			};
+			if (trip) {
+				await updateTrip(trip.id, payload);
+				onclose();
+			} else {
+				const tid = id();
+				const db = requireDb();
+				await db.transact(
+					db.tx.trips[tid]
+						.update({ ...payload, createdAt: Date.now() })
+						.link({ createdBy: profileId })
+				);
+				onclose();
+				await goto(`/trip/${tid}`);
+			}
 		} catch {
 			error = 'Der Trip konnte nicht gespeichert werden. Bitte versuch es noch einmal.';
 		} finally {
@@ -68,7 +84,7 @@
 	}
 </script>
 
-<Sheet {open} {onclose} title="Neuer Trip">
+<Sheet {open} {onclose} title={editing ? 'Trip bearbeiten' : 'Neuer Trip'}>
 	<form class="flex flex-col gap-4" onsubmit={speichern}>
 		<div class="flex flex-col gap-1.5">
 			<label class="micro-label micro-label-caps text-ink-soft dark:text-cream-soft" for="trip-name"
@@ -127,7 +143,7 @@
 		{/if}
 
 		<button type="submit" disabled={busy || !name.trim()} class="btn-primary w-full">
-			{busy ? 'Wird gespeichert …' : 'Trip anlegen'}
+			{busy ? 'Wird gespeichert …' : editing ? 'Speichern' : 'Trip anlegen'}
 		</button>
 	</form>
 </Sheet>

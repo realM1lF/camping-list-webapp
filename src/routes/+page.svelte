@@ -8,14 +8,16 @@
 	import type { Trip } from '$lib/types';
 	import TripCard from '$lib/components/shell/TripCard.svelte';
 	import NewTripSheet from '$lib/components/shell/NewTripSheet.svelte';
+	import { deleteTripDeep } from '$lib/db/repo';
 
 	let sheetOffen = $state(false);
+	let editTrip = $state<Trip | null>(null);
 	let now = $state(new Date());
 
 	const tripsQuery = query<{ trips: Trip[] }>({
 		trips: {
 			createdBy: {},
-			items: { claims: {} }
+			items: { claims: {}, comments: {} }
 		}
 	});
 
@@ -90,7 +92,14 @@
 					Zeit, den nächsten Trip zu planen.
 				</p>
 			</div>
-			<button type="button" class="btn-primary gap-2 px-5" onclick={() => (sheetOffen = true)}>
+			<button
+				type="button"
+				class="btn-primary gap-2 px-5"
+				onclick={() => {
+					editTrip = null;
+					sheetOffen = true;
+				}}
+			>
 				<Plus size={18} strokeWidth={1.75} />
 				Ersten Trip anlegen
 			</button>
@@ -106,7 +115,15 @@
 			<ul class="group-list">
 				{#each trips as trip (trip.id)}
 					<li>
-						<TripCard {trip} />
+						<TripCard
+							{trip}
+							canManage={trip.createdBy?.id === $myProfile?.id}
+							onedit={() => {
+								editTrip = trip;
+								sheetOffen = true;
+							}}
+							ondelete={() => deleteTripDeep(trip)}
+						/>
 					</li>
 				{/each}
 			</ul>
@@ -116,7 +133,10 @@
 
 {#if trips.length > 0}
 	<button
-		onclick={() => (sheetOffen = true)}
+		onclick={() => {
+			editTrip = null;
+			sheetOffen = true;
+		}}
 		aria-label="Neuen Trip anlegen"
 		class="btn-primary fixed right-5 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-40 h-14 w-14 !min-h-14 !px-0"
 	>
@@ -124,4 +144,11 @@
 	</button>
 {/if}
 
-<NewTripSheet open={sheetOffen} onclose={() => (sheetOffen = false)} />
+<NewTripSheet
+	open={sheetOffen}
+	trip={editTrip}
+	onclose={() => {
+		sheetOffen = false;
+		editTrip = null;
+	}}
+/>

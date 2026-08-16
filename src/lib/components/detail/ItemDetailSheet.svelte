@@ -30,6 +30,8 @@
 
 	let confirmingDelete = $state(false);
 	let emojiOpen = $state(false);
+	let claimPending = $state(false);
+	let nameDraft = $state('');
 
 	let claims = $derived(item.claims ?? []);
 	let claimed = $derived(claimedCount(item));
@@ -39,7 +41,7 @@
 		status === 'open' ? 'Offen' : status === 'partial' ? 'Teilweise' : 'Versorgt'
 	);
 	let myClaim = $derived(claims.find((c) => c.user?.id === myProfileId));
-	let myCount = $derived(myClaim?.count || 0);
+	let myCount = $derived(myClaim?.count || (claimPending ? 1 : 0));
 	let isCreator = $derived(item.createdBy?.id === myProfileId);
 	let sortedClaims = $derived(
 		[...claims].sort(
@@ -51,10 +53,20 @@
 	let claimNames = $derived(sortedClaims.map((c) => c.user?.name ?? 'Unbekannt').join(', '));
 
 	$effect(() => {
+		nameDraft = item.name;
+	});
+
+	$effect(() => {
 		if (!open) {
 			confirmingDelete = false;
 			emojiOpen = false;
+			claimPending = false;
+			nameDraft = item.name;
 		}
+	});
+
+	$effect(() => {
+		if (myClaim) claimPending = false;
 	});
 
 	function removeItem() {
@@ -69,7 +81,9 @@
 	function bumpMyClaim(delta: number) {
 		const next = myCount + delta;
 		if (!myClaim) {
+			if (claimPending) return;
 			if (next >= 1) {
+				claimPending = true;
 				claimItem(item.id, myProfileId, 1);
 				haptic('success');
 			}
@@ -82,6 +96,15 @@
 		}
 		updateClaimCount(myClaim.id, Math.min(99, next));
 		haptic(delta > 0 ? 'medium' : 'light');
+	}
+
+	function saveName() {
+		const next = nameDraft.trim();
+		if (!next) {
+			nameDraft = item.name;
+			return;
+		}
+		if (next !== item.name) updateItem(item.id, { name: next });
 	}
 </script>
 
@@ -116,11 +139,30 @@
 				{/if}
 
 				<div class="min-w-0 flex-1 pt-0.5">
-					<h2
-						class="text-[1.375rem] leading-snug font-semibold tracking-tight text-balance break-words hyphens-auto"
-					>
-						{item.name}
-					</h2>
+					{#if isCreator}
+						<input
+							class="w-full bg-transparent text-[1.375rem] leading-snug font-semibold tracking-tight text-ink outline-none dark:text-cream"
+							bind:value={nameDraft}
+							onblur={saveName}
+							onkeydown={(e) => {
+								if (e.key === 'Enter') {
+									e.preventDefault();
+									(e.currentTarget as HTMLInputElement).blur();
+								}
+								if (e.key === 'Escape') {
+									nameDraft = item.name;
+									(e.currentTarget as HTMLInputElement).blur();
+								}
+							}}
+							aria-label="Name"
+						/>
+					{:else}
+						<h2
+							class="text-[1.375rem] leading-snug font-semibold tracking-tight text-balance break-words hyphens-auto"
+						>
+							{item.name}
+						</h2>
+					{/if}
 					<div class="mt-2 flex flex-wrap items-center gap-2">
 						<span
 							class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[0.7rem] font-semibold {BADGE[
@@ -199,7 +241,6 @@
 					value={item.emoji}
 					onchange={(e) => {
 						updateItem(item.id, { emoji: e });
-						emojiOpen = false;
 					}}
 				/>
 			</div>

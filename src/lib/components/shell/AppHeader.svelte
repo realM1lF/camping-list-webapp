@@ -13,6 +13,7 @@
 	let menuMounted = $state(false);
 	let menuClosing = $state(false);
 	let settingsOffen = $state(false);
+	let notifOpen = $state(false);
 	let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
 	const MENU_MS = 280;
@@ -100,7 +101,7 @@
 
 		<div class="relative z-10 flex items-center gap-0.5">
 			{#if $myProfile}
-				<NotificationBell />
+				<NotificationBell bind:open={notifOpen} part="button" />
 			{/if}
 			<ThemeToggle />
 			{#if $myProfile}
@@ -152,4 +153,7 @@
 	</div>
 </header>
 
+{#if $myProfile}
+	<NotificationBell bind:open={notifOpen} part="sheet" />
+{/if}
 <ProfileSettings open={settingsOffen} onclose={() => (settingsOffen = false)} />

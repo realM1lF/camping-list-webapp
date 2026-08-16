@@ -75,7 +75,7 @@ export interface AppNotification {
 
 export type ItemStatus = 'open' | 'partial' | 'covered';
 
-/** category = normale Kategoriegruppen; compact = gleiche Gruppen, dichtere Zeilen */
+/** category = Gruppen; compact = flache Liste, offen zuerst */
 export type ListView = 'category' | 'compact';
 export type ItemFilter = 'all' | 'open' | 'mine';
 

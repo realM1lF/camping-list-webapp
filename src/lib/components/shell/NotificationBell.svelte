@@ -1,13 +1,20 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { Bell } from 'lucide-svelte';
+	import { Bell, X } from 'lucide-svelte';
 	import Sheet from '$lib/components/Sheet.svelte';
 	import { myProfile, query } from '$lib/db/store';
-	import { markAllNotificationsRead, markNotificationRead } from '$lib/db/repo';
+	import { deleteNotifications, markAllNotificationsRead, markNotificationRead } from '$lib/db/repo';
 	import type { AppNotification } from '$lib/types';
 	import { haptic } from '$lib/motion/haptic';
 
-	let open = $state(false);
+	let {
+		open = $bindable(false),
+		part = 'all'
+	}: {
+		open?: boolean;
+		part?: 'button' | 'sheet' | 'all';
+	} = $props();
+
 	let items = $state<AppNotification[]>([]);
 
 	$effect(() => {
@@ -46,11 +53,30 @@
 		return relFmt.format(Math.round(diffH / 24), 'day');
 	}
 
-	async function openSheet() {
+	function openSheet() {
 		open = true;
 		haptic('light');
+	}
+
+	let confirmClear = $state(false);
+
+	async function markAllRead() {
 		const ids = unread.map((n) => n.id);
 		if (ids.length) await markAllNotificationsRead(ids);
+	}
+
+	async function clearAll() {
+		const ids = items.map((n) => n.id);
+		if (!ids.length) return;
+		await deleteNotifications(ids);
+		confirmClear = false;
+		haptic('light');
+	}
+
+	async function dismissOne(id: string, e: Event) {
+		e.stopPropagation();
+		await deleteNotifications([id]);
+		haptic('light');
 	}
 
 	async function openNotif(n: AppNotification) {
@@ -65,6 +91,7 @@
 </script>
 
 {#if $myProfile}
+	{#if part === 'button' || part === 'all'}
 	<button
 		type="button"
 		onclick={openSheet}
@@ -81,19 +108,63 @@
 			</span>
 		{/if}
 	</button>
+	{/if}
 
-	<Sheet {open} onclose={() => (open = false)} title="Benachrichtigungen">
+	{#if part === 'sheet' || part === 'all'}
+	<Sheet
+		{open}
+		onclose={() => {
+			open = false;
+			confirmClear = false;
+		}}
+		title="Benachrichtigungen"
+	>
 		{#if items.length === 0}
 			<p class="px-1 py-10 text-center text-sm text-ink-soft dark:text-cream-soft">
 				Noch nichts Neues – Antworten und Erwähnungen erscheinen hier.
 			</p>
 		{:else}
+			<div class="mb-2 flex gap-2">
+				{#if unreadCount > 0}
+					<button
+						type="button"
+						class="pressable min-h-11 flex-1 rounded-2xl px-3 text-sm font-semibold text-ink-soft hover:bg-sunken/60 dark:text-cream-soft dark:hover:bg-night-sunken"
+						onclick={markAllRead}
+					>
+						Alle gelesen
+					</button>
+				{/if}
+				{#if confirmClear}
+					<button
+						type="button"
+						class="pressable min-h-11 flex-1 rounded-2xl px-3 text-sm font-semibold text-red-600 dark:text-red-400"
+						onclick={clearAll}
+					>
+						Wirklich leeren
+					</button>
+					<button
+						type="button"
+						class="pressable min-h-11 flex-1 rounded-2xl px-3 text-sm font-medium text-ink-soft dark:text-cream-soft"
+						onclick={() => (confirmClear = false)}
+					>
+						Abbrechen
+					</button>
+				{:else}
+					<button
+						type="button"
+						class="pressable min-h-11 flex-1 rounded-2xl px-3 text-sm font-semibold text-ink-soft hover:bg-sunken/60 dark:text-cream-soft dark:hover:bg-night-sunken"
+						onclick={() => (confirmClear = true)}
+					>
+						Alle leeren
+					</button>
+				{/if}
+			</div>
 			<ul class="group-list -mx-1 overflow-hidden">
 				{#each items as n (n.id)}
-					<li>
+					<li class="flex items-stretch">
 						<button
 							type="button"
-							class="pressable group-row flex min-h-[3.25rem] w-full flex-col items-start gap-0.5 px-4 py-3 text-left"
+							class="pressable group-row min-h-[3.25rem] min-w-0 flex-1 flex-col items-start gap-0.5 px-4 py-3 text-left"
 							onclick={() => openNotif(n)}
 						>
 							<div class="flex w-full items-baseline justify-between gap-3">
@@ -112,9 +183,18 @@
 								{n.body}
 							</p>
 						</button>
+						<button
+							type="button"
+							class="pressable grid w-11 shrink-0 place-items-center text-ink-soft hover:text-ink dark:text-cream-soft dark:hover:text-cream"
+							onclick={(e) => dismissOne(n.id, e)}
+							aria-label="Benachrichtigung entfernen"
+						>
+							<X size={16} strokeWidth={1.75} />
+						</button>
 					</li>
 				{/each}
 			</ul>
 		{/if}
 	</Sheet>
+	{/if}
 {/if}

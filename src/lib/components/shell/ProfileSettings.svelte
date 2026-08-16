@@ -21,17 +21,22 @@
 	let localPreview = $state<string | null>(null);
 	let pushBusy = $state(false);
 	let pushError = $state<string | null>(null);
+	let seededOpen = $state(false);
 
 	$effect(() => {
-		if (open && $myProfile) {
-			name = $myProfile.name;
-			error = null;
-			busy = false;
-			pushError = null;
-			if (localPreview) {
-				URL.revokeObjectURL(localPreview);
-				localPreview = null;
-			}
+		if (!open) {
+			seededOpen = false;
+			return;
+		}
+		if (seededOpen || !$myProfile) return;
+		seededOpen = true;
+		name = $myProfile.name;
+		error = null;
+		busy = false;
+		pushError = null;
+		if (localPreview) {
+			URL.revokeObjectURL(localPreview);
+			localPreview = null;
 		}
 	});
 

@@ -159,9 +159,9 @@
 
 	function dismiss(releaseVelocity = 0) {
 		if (!mounted || exiting) return;
+		exiting = true;
 		haptic('light');
 		if (isDesktop || reduceMotion) {
-			exiting = true;
 			scrimOpacity = 0;
 			clearExitTimer();
 			exitTimer = setTimeout(finishClose, reduceMotion ? REDUCED_EXIT_MS : DESKTOP_EXIT_MS);
@@ -202,10 +202,25 @@
 		beginDrag(e, e.currentTarget as HTMLElement);
 	}
 
+	function nestedScroller(el: EventTarget | null): HTMLElement | null {
+		let n = el instanceof HTMLElement ? el : null;
+		while (n && n !== bodyEl) {
+			const oy = getComputedStyle(n).overflowY;
+			if ((oy === 'auto' || oy === 'scroll' || oy === 'overlay') && n.scrollHeight > n.clientHeight) {
+				return n;
+			}
+			n = n.parentElement;
+		}
+		return null;
+	}
+
 	function onBodyPointerDown(e: PointerEvent) {
 		if (isDesktop || e.button !== 0 || !mounted || dragging) return;
-		// Only arm dismiss-from-content when scrolled to top (iOS sheet)
+		const t = e.target as HTMLElement | null;
+		if (t?.closest('button, input, textarea, select, a, [role="listbox"]')) return;
 		if ((bodyEl?.scrollTop ?? 0) > 0) return;
+		const inner = nestedScroller(e.target);
+		if (inner && inner.scrollTop > 0) return;
 		dragArmed = true;
 		pointerId = e.pointerId;
 		startY = e.clientY;
@@ -219,7 +234,8 @@
 		if (dragArmed && !dragging) {
 			const dy = e.clientY - startY;
 			// Parallel gesture disambiguation: commit once intent is clear
-			if (dy > HYSTERESIS && (bodyEl?.scrollTop ?? 0) <= 0) {
+			const inner = nestedScroller(e.target);
+			if (dy > HYSTERESIS && (bodyEl?.scrollTop ?? 0) <= 0 && (!inner || inner.scrollTop <= 0)) {
 				beginDrag(e, bodyEl ?? (e.currentTarget as HTMLElement));
 			} else if (dy < -HYSTERESIS) {
 				dragArmed = false;
@@ -271,9 +287,12 @@
 		if (!browser) return;
 		if (!open) {
 			if (exiting) return;
+			if (mounted) {
+				dismiss(700);
+				return;
+			}
 			clearExitTimer();
 			stopSpring();
-			mounted = false;
 			exiting = false;
 			y = 0;
 			velocity = 0;
@@ -350,8 +369,14 @@
 
 <svelte:window onkeydown={onKeydown} />
 
-{#if open && mounted}
-	<div class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title ?? 'Dialog'}>
+{#if mounted}
+	<div
+		class="fixed inset-0 z-50"
+		class:pointer-events-none={exiting}
+		role="dialog"
+		aria-modal="true"
+		aria-label={title ?? 'Dialog'}
+	>
 		<button
 			class="sheet-scrim absolute inset-0 h-full w-full cursor-default"
 			class:sheet-scrim--desktop={isDesktop}
